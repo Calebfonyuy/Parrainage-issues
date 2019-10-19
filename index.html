@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>PARRAINAGE 2022</title>
+    <link rel="stylesheet" href="css/alertify.min.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-light">
+    <div>
+        <div class="text-center text-light mb-2 bg-success h3">
+            PARRAINAGE GI 2022
+        </div>
+        <div class="row">
+            <div class="col-lg-0 col-md-0 col-sm-12" id="upper-code">
+                <div class="m-auto text-center participant-display"></div>
+                <div class="image-area border border-success text-center">
+                    <img id="image">
+                </div>
+                <div class="text-center mt-2">
+                    <a class="btn btn-success download" href="#" hidden="hidden"
+                        download="ticket.png">T&eacute;l&eacute;charger</a>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-12 m-auto" id="form-area">
+                <div class="m-2 mr-2 ml-2 text-center">
+                    <legend>Inscription Pour la Soiree de Parrainage GI 2022</legend>
+                    <a href="/list" class="text-success">Liste des personnes Inscrits</a>
+                </div>
+                <hr>
+                <div class="pr-5 pl-5 pb-5" id="form-area">
+                    <div class="form-group row">
+                        <div class="col-lg-4 col-md-3">
+                            <span class="form-label">Noms et prenoms</span>
+                        </div>
+                        <div class="col-lg-7 col-md-7 m-auto">
+                            <input type="text" name="etudiant" id="etudiant" class="form-control">
+                            <span class="invalid-feedback">Obligatoire</span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-lg-4 col-md-3">
+                            <span class="form-label">Sexe</span>
+                        </div>
+                        <div class="col-lg-7 col-md-7 m-auto">
+                            <select name="sexe" id="sexe" class="form-control">
+                                <option value="Masculin">Masculin</option>
+                                <option value="Feminin">Feminin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-lg-4 col-md-3">
+                            <span class="form-label">Ticket</span>
+                        </div>
+                        <div class="col-lg-7 col-md-7 m-auto">
+                            <select name="montant" id="montant" class="form-control">
+                                <option value="GRAT">GRATUIT</option>
+                                <option value="2500">2500F</option>
+                                <option value="3000">3000F</option>
+                            </select>
+                            <span class="invalid-feedback">Invalide</span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-lg-4 col-md-3">
+                            <span class="form-label">Niveau</span>
+                        </div>
+                        <div class="col-lg-7 col-md-7 m-auto">
+                            <select name="niveau" id="niveau" class="form-control">
+                                <option value="3GI">3GI</option>
+                                <option value="4GI">4GI</option>
+                                <option value="5GI">5GI</option>
+                                <option value="AUT">AUTRE</option>
+                            </select>
+                            <span class="invalid-feedback">Invalide</span>
+                        </div>
+                    </div>
+                    <div class="form-group text-center">
+                        <button class="btn btn-success w-25" id="submit">G&eacute;n&eacute;rer Ticket</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 col-md-5 col-sm-12 mr-auto ml-auto mt-5" id="buttom-code">
+                <div class="m-auto text-center participant-display"></div>
+                <div class="image-area border border-success text-center">
+                    <img id="image">
+                </div>
+                <div class="text-center mt-2">
+                    <a class="btn btn-success download" href="#" hidden="hidden" download="ticket.png">T&eacute;l&eacute;charger</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.4.1.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/alertify.min.js"></script>
+    <script src="js/JsBarcode.all.min.js"></script>
+    <script>
+        function checkFields() {
+            let status = true;
+            $('.is-invalid').removeClass('is-invalid');
+            if ($('#etudiant').val()=="") {
+                $('#etudiant').addClass('is-invalid');
+                status = false;
+            }
+
+            if ($('#montant').val()=="GRAT") {
+                if ($('#niveau').val()!="3GI" && $('#sexe').val() != "Feminin") {
+                    status = false;
+                    $('#montant').addClass('is-invalid');
+                    console.log('Invalide')
+                }
+            }
+            if ($('#niveau').val()=="3GI" && $('#montant').val()!="GRAT") {
+                $('#montant').addClass('is-invalid');
+                status = false;
+            }
+
+            return status;
+        }
+
+        function display(participant) {
+            $('.participant-display').html(
+                participant.nom+"<br>"+participant.sexe+" "+ participant.niveau +
+                "<br> Ticket: "+ participant.montant
+            );
+        }
+
+        function createBarcode(participant) {
+            $(".image-area > img").JsBarcode(participant.num+'-'
+                +participant.nom.split(' ')[0]+"-" + participant.sexe.substr(0, 3).toUpperCase()+ "-"+participant.niveau, {
+                format: "CODE128",
+                height: 70,
+                displayValue: false
+            });
+
+            $('.download').attr('href', $('#image').attr('src'));
+            $('.download').attr('download',participant.nom);
+            $('.download').removeAttr('hidden');
+
+            $.ajax({
+                url: "/save",
+                method: "POST",
+                data: {
+                    ticket: JSON.stringify(participant)
+                },
+                success: function (data) {
+                    alertify.success(data);
+                },
+                error: function (params) {
+                    alertify.error("Erreur d'enregistrement du ticket");
+                }
+            });
+        }
+
+        $('#submit').click(function () {
+            if (!checkFields()) {
+                alertify.error('Information Invalide');
+                return;
+            }
+            let num = 2;
+            let participant = {};
+            participant.nom = $('#etudiant').val().toUpperCase();
+            participant.niveau = $('#niveau').val();
+            participant.sexe = $('#sexe').val();
+            participant.montant = $('#montant').val()=="GRAT"? $('#montant').val()+"UIT": $('#montant').val()+" FCFA";
+
+            $.ajax({
+                url: "/number",
+                method: "GET",
+                success: function (data) {
+                    data = JSON.parse(data);
+                    if (data.status=="BAD") {
+                        alertify.error("Impossible d'obtenir un numero de serie pour le ticket");
+                    }else{
+                        participant.num = data.number.toString().padStart(3,'0');
+                        display(participant);
+                        createBarcode(participant);
+                    }
+                },
+                error: function (data) {
+                    alertify.error("Erreur d'obtention d'un numero de serie");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

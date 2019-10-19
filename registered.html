@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>PARRAINAGE 2022</title>
+    <link rel="stylesheet" href="css/alertify.min.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/datatables.min.css">
+    <link rel="stylesheet" href="css/buttons.dataTables.min.css">
+</head>
+<body>
+    <div>
+        <div class="text-center text-light mb-2 bg-success h3">
+            PARRAINAGE GI 2022
+        </div>
+        <div class="row">
+            <div class="col-8 text-center text-success h4">
+                Liste des tickets
+            </div>
+            <div class="col-3 m-auto">
+                <a href="/" class="text-success">Nouveau ticket</a>
+            </div>
+        </div>
+        <div class="text-center m-5">
+            <table class="table table-bordered table-hover" id="registered">
+                <thead class="thead-light">
+                    <th>Numero</th>
+                    <th>Nom</th>
+                    <th>Sexe</th>
+                    <th>Niveau</th>
+                    <th></th>
+                </thead>
+            </table>
+        </div>
+
+        <div class="modal fade" id="code-box" aria-hidden="true" aria-labelledby="code-btn">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title h5">
+                            
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div class="image-area border border-success text-center">
+                            <img id="image">
+                        </div>
+                    </div>
+                    <div class="modal-footer text-center">
+                        <a class="btn btn-success download" href="#"
+                            download="ticket.png">T&eacute;l&eacute;charger</a>
+                        <button class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jquery-3.4.1.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/alertify.min.js"></script>
+    <script src="js/JsBarcode.all.min.js"></script>
+    <script src="js/datatables.min.js"></script>
+    <script src="js/buttons.print.min.js"></script>
+    <script>
+        let table = $('#registered').DataTable({
+            dom: 'Bfrtip',
+            columns: [
+                {data: "num"},
+                {data: "nom"},
+                {data: "sexe"},
+                {data: "niveau"},
+                {data: "montant", render: function (data) {
+                    return '<button class="btn btn-success code-btn"'+
+                        ' data-toggle="modal" data-target="#code-box">Code barre</button>';
+                }}
+            ],
+            buttons: [
+                {
+                    extend: 'print',
+                    text: 'Imprimer liste',
+                    footer: false,
+                    message: 'Liste des tickets la soiree de parrainage GI 2022'
+                },
+                {
+                    extend: 'excel',
+                    text: 'Extraire fichier excel',
+                    footer: false,
+                    message: 'Liste des tickets la soiree de parrainage GI 2022'
+                }
+            ]
+        });
+
+        $(document).ready(function () {
+            $.ajax({
+                url: 'registered.json',
+                method: "GET",
+                success: function (data) {
+                    table.rows.add(data).draw();
+                },
+                error: function () {
+                    alertify.error('Impossible de charger les donnees');
+                }
+            });
+        });
+
+        $(document).on('click','#registered .code-btn',function () {
+            let participant = table.row($(this).parents('tr')).data();
+            createBarcode(participant);
+        });
+
+         function createBarcode(participant) {
+                JsBarcode(".image-area > img",participant.num + '-'
+                    + participant.nom.split(' ')[0] + "-" + participant.sexe.substr(0,3).toUpperCase() + "-" + participant.niveau, {
+                    format: "CODE128",
+                    height: 70,
+                    displayValue: false
+                });
+
+                $('.download').attr('href', $('#image').attr('src'));
+                $('.download').attr('download', participant.nom);
+                $('.modal-title').text(participant.nom);
+            }
+    </script>
+</body>
+</html>

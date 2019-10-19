@@ -1,0 +1,17 @@
+.image-area{
+    min-height: 100px;
+    min-width: 200px;
+    margin: auto;
+}
+
+@media(max-width: 769px){
+    #buttom-code{
+        display: none;
+    }
+}
+
+@media(min-width: 769px){
+    #upper-code{
+        display: none;
+    }
+}
